@@ -13,7 +13,19 @@ export class PrismaService
       throw new Error('Missing DATABASE_URL for PrismaClient');
     }
 
-    const adapter = new PrismaMariaDb(datasourceUrl);
+    const url = new URL(datasourceUrl);
+    const database = url.pathname.replace(/^\//, '') || undefined;
+
+    const adapter = new PrismaMariaDb({
+      host: url.hostname,
+      port: url.port ? Number(url.port) : 3306,
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      database,
+      connectionLimit: 10,
+      allowPublicKeyRetrieval: true,
+      ssl: false,
+    });
     super({ adapter });
   }
 

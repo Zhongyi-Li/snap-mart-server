@@ -9,15 +9,24 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register-auth.dto';
+import { LoginDto } from './dto/login-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+import { successResponse } from '../../common/dto/response.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  create(@Body() registerDto: RegisterDto) {
-    return this.authService.create(registerDto);
+  async create(@Body() registerDto: RegisterDto) {
+    const result = await this.authService.create(registerDto);
+    return successResponse(result, '注册成功', 200);
+  }
+
+  @Post('login')
+  async login(@Body() loginDto: LoginDto) {
+    const result = await this.authService.login(loginDto);
+    return successResponse(result, '登录成功', 200);
   }
 
   @Get()

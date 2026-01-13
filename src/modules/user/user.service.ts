@@ -17,6 +17,11 @@ export class UserService {
     updatedAt: true,
   } satisfies Prisma.UserSelect;
 
+  private readonly authSelect = {
+    ...this.safeSelect,
+    password: true,
+  } satisfies Prisma.UserSelect;
+
   findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
@@ -35,6 +40,20 @@ export class UserService {
     return this.prisma.user.findUnique({
       where: { phone },
       select: this.safeSelect,
+    });
+  }
+
+  findByEmailWithPassword(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+      select: this.authSelect,
+    });
+  }
+
+  findByPhoneWithPassword(phone: string) {
+    return this.prisma.user.findUnique({
+      where: { phone },
+      select: this.authSelect,
     });
   }
 
