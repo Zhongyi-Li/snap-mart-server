@@ -66,12 +66,9 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const account = loginDto.account.trim();
+    const email = loginDto.email.trim();
 
-    const isEmail = account.includes('@');
-    const user = isEmail
-      ? await this.userService.findByEmailWithPassword(account)
-      : await this.userService.findByPhoneWithPassword(account);
+    const user = await this.userService.findByEmailWithPassword(email);
 
     if (!user) {
       throw new UnauthorizedException('账号或密码错误');
@@ -88,7 +85,9 @@ export class AuthService {
       username: user.username,
     });
 
-    return { token };
+    const { password, ...safeUser } = user;
+
+    return { token, user: safeUser };
   }
 
   findAll() {

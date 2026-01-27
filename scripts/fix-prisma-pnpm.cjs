@@ -16,7 +16,6 @@ function ensureSymlink(linkPath, targetPath) {
 
 function main() {
   const projectRoot = path.resolve(__dirname, '..');
-  const prismaArtifactsDir = path.join(projectRoot, 'node_modules', '.prisma');
   const prismaClientPkgDir = path.join(
     projectRoot,
     'node_modules',
@@ -29,7 +28,29 @@ function main() {
     return;
   }
 
-  if (!fs.existsSync(prismaArtifactsDir)) {
+  const prismaArtifactsDirCandidates = [];
+
+  // Classic layout (npm/yarn/pnpm with root artifacts)
+  prismaArtifactsDirCandidates.push(
+    path.join(projectRoot, 'node_modules', '.prisma'),
+  );
+
+  // pnpm store layout: generated artifacts can live next to the real package
+  // path, e.g. node_modules/.pnpm/.../node_modules/.prisma
+  try {
+    const realPrismaClientPkgDir = fs.realpathSync(prismaClientPkgDir);
+    prismaArtifactsDirCandidates.push(
+      path.resolve(realPrismaClientPkgDir, '..', '..', '.prisma'),
+    );
+  } catch {
+    // ignore
+  }
+
+  const prismaArtifactsDir = prismaArtifactsDirCandidates.find((candidate) =>
+    fs.existsSync(candidate),
+  );
+
+  if (!prismaArtifactsDir) {
     // Prisma Client might not be generated yet.
     return;
   }

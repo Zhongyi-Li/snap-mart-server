@@ -2,7 +2,7 @@ export interface ApiResponse<T = null> {
   code: number;
   message: string;
   success: boolean;
-  result: T;
+  data: T;
 }
 
 export function successResponse<T>(
@@ -14,7 +14,7 @@ export function successResponse<T>(
     code,
     message,
     success: true,
-    result: data,
+    data,
   };
 }
 
@@ -26,6 +26,6 @@ export function errorResponse(
     code,
     message,
     success: false,
-    result: null,
+    data: null,
   };
 }

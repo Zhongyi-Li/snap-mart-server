@@ -10,7 +10,7 @@ export interface ApiErrorResponse {
   code: number;
   message: string;
   success: boolean;
-  result: null;
+  data: null;
 }
 
 type ExceptionResponseBody = {
@@ -46,7 +46,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       code: status,
       message,
       success: false,
-      result: null,
+      data: null,
     };
 
     response.status(status).json(apiResponse);

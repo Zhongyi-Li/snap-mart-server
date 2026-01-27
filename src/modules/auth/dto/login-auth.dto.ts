@@ -1,8 +1,8 @@
-import { IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @IsString({ message: '账号不能为空' })
-  account: string;
+  @IsEmail({}, { message: '邮箱不能为空或格式不正确' })
+  email: string;
 
   @IsString({ message: '密码不能为空' })
   @MinLength(6, { message: '密码长度不能少于 6 位' })

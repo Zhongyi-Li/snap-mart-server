@@ -19,12 +19,14 @@ export class AuthController {
 
   @Post('register')
   async create(@Body() registerDto: RegisterDto) {
+    console.log('用户注册');
     const result = await this.authService.create(registerDto);
     return successResponse(result, '注册成功', 200);
   }
 
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
+    console.log('登录1');
     const result = await this.authService.login(loginDto);
     return successResponse(result, '登录成功', 200);
   }
