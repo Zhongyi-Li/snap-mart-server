@@ -30,4 +30,4 @@ COPY --from=build /app/prisma ./prisma
 
 EXPOSE 3001
 # ✅ 关键2：Nest 的产物通常是 dist/main.js，不是 dist/main
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
