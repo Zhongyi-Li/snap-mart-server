@@ -16,9 +16,16 @@ RUN pnpm run build
 
 FROM base AS runner
 ENV NODE_ENV=production
+
 COPY package.json pnpm-lock.yaml ./
+
+# ✅ 关键：让 postinstall 能找到脚本
+COPY scripts ./scripts
+
 RUN pnpm install --prod --frozen-lockfile
+
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
+
 EXPOSE 3001
 CMD ["node", "dist/main"]
