@@ -6,7 +6,6 @@ RUN corepack enable
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-# deps 阶段需要 scripts + prisma（pnpm install 触发 postinstall/以及 prisma 相关）
 COPY scripts ./scripts
 COPY prisma ./prisma
 RUN pnpm install --frozen-lockfile
@@ -22,14 +21,19 @@ ENV NODE_ENV=production
 
 COPY package.json pnpm-lock.yaml ./
 COPY scripts ./scripts
-# ✅ 关键：runner 阶段也要有 prisma（generate 需要 schema）
 COPY prisma ./prisma
 
 RUN pnpm install --prod --frozen-lockfile
-# ✅ 关键：在最终镜像里生成 Prisma Client，避免 .prisma/client/default 缺失
 RUN pnpm prisma generate
 
+# ✅ 拷贝编译产物
 COPY --from=build /app/dist ./dist
 
+# ✅ 关键：把 dist 里的 prisma.config 放到项目根目录（Prisma CLI 才能识别）
+# 这样 pnpm prisma migrate deploy 才能拿到 datasource.url（来自 DATABASE_URL）
+RUN cp -f ./dist/prisma.config.js ./prisma.config.js
+
 EXPOSE 3001
-CMD ["node", "dist/src/main.js"]
+
+# ✅ 启动前自动应用迁移（推荐上线必做）
+CMD ["sh", "-lc", "pnpm prisma migrate deploy && node dist/src/main.js"]
