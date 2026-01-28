@@ -6,7 +6,7 @@ RUN corepack enable
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-# ✅ 关键1：deps 阶段也要有 scripts（否则 pnpm install 触发 postinstall 会找不到脚本）
+# deps 阶段需要 scripts + prisma（pnpm install 触发 postinstall/以及 prisma 相关）
 COPY scripts ./scripts
 COPY prisma ./prisma
 RUN pnpm install --frozen-lockfile
@@ -21,13 +21,15 @@ FROM base AS runner
 ENV NODE_ENV=production
 
 COPY package.json pnpm-lock.yaml ./
-# runner 阶段同样保留（避免 prod install 也触发 postinstall 出问题）
 COPY scripts ./scripts
+# ✅ 关键：runner 阶段也要有 prisma（generate 需要 schema）
+COPY prisma ./prisma
+
 RUN pnpm install --prod --frozen-lockfile
+# ✅ 关键：在最终镜像里生成 Prisma Client，避免 .prisma/client/default 缺失
+RUN pnpm prisma generate
 
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/prisma ./prisma
 
 EXPOSE 3001
-# ✅ 关键2：Nest 的产物通常是 dist/main.js，不是 dist/main
 CMD ["node", "dist/src/main.js"]
