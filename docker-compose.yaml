@@ -3,7 +3,7 @@ name: snap-mart-server # 这里定义的名字会显示在 Docker 面板
 
 services:
   api:
-    build: .
+    image: pinkad/snap-mart-api:latest
     container_name: snap-mart-api
     restart: always
     depends_on:
@@ -14,7 +14,7 @@ services:
       JWT_SECRET: change_me_to_a_long_random_string
       JWT_EXPIRES_IN: 7d
     ports:
-      - '3001:3001'
+      - "3001:3001"
 
   db:
     image: mysql:8.0
