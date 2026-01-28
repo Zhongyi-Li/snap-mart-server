@@ -1,5 +1,5 @@
 name: snap-mart-server # 这里定义的名字会显示在 Docker 面板
-version: '3.8'
+# version: '3.8'
 
 services:
   api:
