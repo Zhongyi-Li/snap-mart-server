@@ -1,21 +1,6 @@
-name: snap-mart-server # 这里定义的名字会显示在 Docker 面板
-# version: '3.8'
+name: snap-mart-server
 
 services:
-  api:
-    image: pinkad/snap-mart-api:latest
-    container_name: snap-mart-api
-    restart: always
-    depends_on:
-      - db
-    environment:
-      PORT: 3001
-      DATABASE_URL: mysql://root:123456@db:3306/snap_mart
-      JWT_SECRET: change_me_to_a_long_random_string
-      JWT_EXPIRES_IN: 7d
-    ports:
-      - "3001:3001"
-
   db:
     image: mysql:8.0
     container_name: snap-mart-mysql
@@ -24,9 +9,46 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: snap_mart
     ports:
-      - '3308:3306'
+      - "3308:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p123456"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    # ✅ 使用 Dockerfile 里的 migrate target
+    build:
+      context: .
+      target: migrate
+    container_name: snap-mart-migrate
+    environment:
+      DATABASE_URL: mysql://root:123456@db:3306/snap_mart
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    # ✅ 使用 Dockerfile 里的 runner target
+    build:
+      context: .
+      target: runner
+    image: pinkad/snap-mart-api:latest
+    container_name: snap-mart-api
+    restart: always
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: 3001
+      DATABASE_URL: mysql://root:123456@db:3306/snap_mart
+      JWT_SECRET: change_me_to_a_long_random_string
+      JWT_EXPIRES_IN: 7d
+    ports:
+      - "3001:3001"
 
 volumes:
   mysql_data:
