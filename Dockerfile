@@ -1,5 +1,5 @@
 
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 WORKDIR /app
 RUN corepack enable
 
@@ -52,6 +52,7 @@ COPY --from=build /app/dist ./dist
 # ✅ Prisma runtime 相关内容从 build 拷过来（避免 runner 再 generate / 再下载）
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/node_modules/@prisma/client ./node_modules/@prisma/client
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 
 EXPOSE 3001
 # ✅ 注意：runner 不再做 migrate
